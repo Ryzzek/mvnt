@@ -48,4 +48,4 @@ That's all you have to do.
 The cli app was made possible with API's and it's not on me if they stop working by some reason.
 
 ## Contribution
-If you want, you may contribute by either optimizing or adding to the code as you see fit.
+This is my first bash project and I learned many things along the way, any constructive criticism or help would be appretiated. If you want, you may contribute by either optimizing or adding to the code as you see fit.
