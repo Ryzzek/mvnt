@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+
+# Installation script for mvnt
+
+BASENAME="mvnt"
+
+if ! [ $(id -u) = 0 ]; then
+	echo "The script needs to be run as root ('sudo ./install' for linux)."
+	exit 1
+fi
+
+dependency_check () { # Check if dependencies are installed
+	array_programs=()
+
+	if ! command -v fzf &> /dev/null
+	then
+    	array_programs+=("fzf")
+    fi
+  	
+  	if ! command -v curl &> /dev/null  
+  	then
+  		array_programs+=("curl")
+  	fi
+  	
+  	if ! command -v jq &> /dev/null  
+  	then
+  		array_programs+=("jq")
+	fi
+
+	if [[ ${#array_programs} != "0" ]]; then
+		while true; do
+			echo -ne "Program(s) ${ITRed}${array_programs[@]}${clr} not found. Install (y/n)? "
+			read opt
+
+			case $opt in
+				[Yy]* )
+					echo "Started installation..."
+					sleep .5
+					$pkgm ${array_programs[@]}
+					exit
+					;;
+
+				[Nn]* )
+					echo "Cancelled intallation..."
+					exit
+					;;
+
+				* ) echo "Please answer yes or no.";;
+			esac
+		done
+	fi
+}
+
+
+# Proceed with installation based on OS
+case "$OSTYPE" in
+    *"android") # Tested on Termux
+    	echo $OSTYPE
+    	DESTDIR="/data/data/com.termux/files/usr/bin"
+    	echo $DESTDIR
+    	mkdir -p "$DESTDIR"
+    	cp -p "$BASENAME" "$DESTDIR"
+    	chmod 755 "$DESTDIR/$BASENAME"
+    	pkgm="pkg install"
+    	dependency_check "$pkgm"
+    ;;
+
+    "linux"*) # Tested on Ubuntu WSL2
+    	echo $OSTYPE
+    	DESTDIR="/usr/local/bin"
+    	echo $DESTDIR
+    	mkdir -p "$DESTDIR"
+    	cp -p "$BASENAME" "$DESTDIR"
+    	chmod 755 "$DESTDIR/$BASENAME"
+    	pkgm="sudo apt-get install"
+    	dependency_check "$pkgm"
+    ;;
+
+    # "cygwin" | "msys" | "win32") # (Not tested) for Git Bash 
+    	# DESTDIR="$HOME/bin"
+    	# mkdir -p "$DESTDIR"
+    	# cp -p "$BASENAME" "$DESTDIR"
+    	# chmod 755 "$DESTDIR/$BASENAME"
+    	# dependency_check
+    # ;;
+
+    *)
+        printf '%s\n' "Unknown or unsupported OS detected, aborting..." >&2# 
+        exit 1
+    ;;
+esac

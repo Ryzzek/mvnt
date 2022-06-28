@@ -1,0 +1,1544 @@
+#!/usr/bin/env bash
+
+################################################################################
+#                                 ~ mvnt ~                                     #
+#                                                                              #
+# Movie Night is a general purpose entertainment program to fetch data         #
+# about movies, tv shows, the box office, etc. Useful if you want information  #
+# about something or if you just want to download a movie for a movie night ;).#
+#                                                                              #
+################################################################################
+
+# Reset
+clr='\033[0m'             # Text Reset
+
+# Regular Colors
+Black='\033[0;30m'        # Black
+Red='\033[0;31m'          # Red
+Green='\033[0;32m'        # Green
+Yellow='\033[0;33m'       # Yellow
+Blue='\033[0;34m'         # Blue
+Purple='\033[0;35m'       # Purple
+Cyan='\033[0;36m'         # Cyan
+White='\033[0;37m'        # White
+
+# Bold
+BBlack='\033[1;30m'       # Black
+BRed='\033[1;31m'         # Red
+BGreen='\033[1;32m'       # Green
+BYellow='\033[1;33m'      # Yellow
+BBlue='\033[1;34m'        # Blue
+BPurple='\033[1;35m'      # Purple
+BCyan='\033[1;36m'        # Cyan
+BWhite='\033[1;37m'       # White
+
+# Italics
+ITBlack='\033[3;30m'      # Black
+ITRed='\033[3;31m'        # Red
+ITGreen='\033[3;32m'      # Green
+ITYellow='\033[3;33m'     # Yellow
+ITBlue='\033[3;34m'       # Blue
+ITPurple='\033[3;35m'     # Purple
+ITCyan='\033[3;36m'       # Cyan
+ITWhite='\033[3;37m'      # White
+
+# Underline
+UBlack='\033[4;30m'       # Black
+URed='\033[4;31m'         # Red
+UGreen='\033[4;32m'       # Green
+UYellow='\033[4;33m'      # Yellow
+UBlue='\033[4;34m'        # Blue
+UPurple='\033[4;35m'      # Purple
+UCyan='\033[4;36m'        # Cyan
+UWhite='\033[4;37m'       # White
+
+# Blink
+BLBlack='\033[5;30m'      # Black
+BLRed='\033[5;31m'        # Red
+BLGreen='\033[5;32m'      # Green
+BLYellow='\033[5;33m'     # Yellow
+BLBlue='\033[5;34m'       # Blue
+BLPurple='\033[5;35m'     # Purple
+BLCyan='\033[5;36m'       # Cyan
+BLWhite='\033[5;37m'      # Whie
+
+# Background
+On_Black='\033[40m'       # Black
+On_Red='\033[41m'         # Red
+On_Green='\033[42m'       # Green
+On_Yellow='\033[43m'      # Yellow
+On_Blue='\033[44m'        # Blue
+On_Purple='\033[45m'      # Purple
+On_Cyan='\033[46m'        # Cyan
+On_White='\033[47m'       # White
+
+# High Intensity
+IBlack='\033[0;90m'       # Black
+IRed='\033[0;91m'         # Red
+IGreen='\033[0;92m'       # Green
+IYellow='\033[0;93m'      # Yellow
+IBlue='\033[0;94m'        # Blue
+IPurple='\033[0;95m'      # Purple
+ICyan='\033[0;96m'        # Cyan
+IWhite='\033[0;97m'       # White
+
+# Bold High Intensity
+BIBlack='\033[1;90m'      # Black
+BIRed='\033[1;91m'        # Red
+BIGreen='\033[1;92m'      # Green
+BIYellow='\033[1;93m'     # Yellow
+BIBlue='\033[1;94m'       # Blue
+BIPurple='\033[1;95m'     # Purple
+BICyan='\033[1;96m'       # Cyan
+BIWhite='\033[1;97m'      # White
+
+# High Intensity backgrounds
+On_IBlack='\033[0;100m'   # Black
+On_IRed='\033[0;101m'     # Red
+On_IGreen='\033[0;102m'   # Green
+On_IYellow='\033[0;103m'  # Yellow
+On_IBlue='\033[0;104m'    # Blue
+On_IPurple='\033[0;105m'  # Purple
+On_ICyan='\033[0;106m'    # Cyan
+On_IWhite='\033[0;107m'   # White
+
+# Hidden
+Hidden='\e[8m'
+
+# Cursor Movement
+ACursor='\e[<1>;<1>H'     # Move cursor to absolute position
+HCursor='\e[H'            # Move cursor to home position (0,0)
+UCursor='\e[<1>A'         # Move cursor up N lines 
+DCursor='\e[<1>B'         # Move cursor down N lines
+LCursor='\e[<1>C'         # Move cursor right N lines
+RCursor='\e[<1>D'         # Move cursor left N lines
+SCursor='\e[s'            # Save cursor position
+TCursor='\e[u'            # Restore cursor position
+
+# Erasing Text
+EErase='\e[K'             # Erase from cursor position to end of line
+SErase='\e[1K'            # Erase from cursor position to start of line
+LErase='\e[2K'            # Erase the entire current line
+BErase='\e[J'             # Erase from the current line to the bottom of the screen
+TErase='\e[1J'            # Erase from the current line to the top of the screen
+SClear='\e[2J'            # Clear the screen
+HClear='\e[2J\e[H'        # Clear the screen and move cursor to 0,0
+
+# Misc
+Link='\e]8;;LINK\aTEXT\e]8;;\a' # Replace a link with a string
+NBlink='\033[?12l'              # Stop cursor from blinking
+
+# ----------------------------------------------------------------------------------------
+
+# Get name of script from within
+BASENAME="$(basename "$0")"
+# version
+VERSION="1.0.0"
+
+
+banner () {
+	cat <<'END_CAT'
+                          __      
+                         /\ \__   
+  ___ ___   __  __    ___\ \ ,_\  
+/' __` __`\/\ \/\ \ /' _ `\ \ \/  
+/\ \/\ \/\ \ \ \_/ |/\ \/\ \ \ \_ 
+\ \_\ \_\ \_\ \___/ \ \_\ \_\ \__\
+ \/_/\/_/\/_/\/__/   \/_/\/_/\/__/
+END_CAT
+	echo
+	printf "%s\n" "Movie Night"
+	printf "%s\n" "Author: Jaok Tatsu"
+	printf "%s\n" "🎥 Enjoy ;)"
+	echo
+}
+
+# ----------------------------------------------------------------------------------------
+
+# Help text
+declare -a help_text
+help_text=(
+	""
+	"Usage:" 
+	"  "$BASENAME" [OPTIONS] [FLAGS]"
+	"" 
+	"Options:"
+	"  -m, --menu [c]                Display the main menu with different styles" 
+	"  -d, --dnld [query]            Download movie with query search and multiple selection"
+	"  -t, --theater [s|d]           Display theater releases in two modes (simple/detailed)" 
+	"  -s, --soon [s|d]              Display coming soon releases in two modes (simple/detailed)" 
+	"  -tv, --tvshow [query]         Search for a tv show with optional season and episode specification"
+	"                                query syntax: [name] [season](optional) [episode](optional)"
+	"  -a, --strm [query]            View streaming availability of a movie or show"
+	"  -b, --boxo [r|a]              Select between recent box office or highest grossing films ever"
+	""
+	"  -h, --help                    Show help" 
+	"  -v, --version                 Show version"
+	""
+)
+
+
+help_text () {
+	printf "\e[0;37m%s\e[0m\n" "${help_text[@]}"
+}
+
+
+_done () { # Done text after successful task
+	echo -e "${IGreen}Done :)${clr}\n"
+}
+
+
+API_KEY="k_mokx06nk"                                  # Used in theaters and coming soon
+API_KEY2="k_6cf9pfny"                                 # Used in box office [r|a]
+API_KEY3="WuTPPoj7WfVuIvFUzSAL01760PaFmBZ2fw1SLKLi"   # Used in streaming availability
+API_KEY4="sDJ8jYfMAofemh0gsYM3ZA==WsLJTeIpa21aiMoa"   # Used in random fact
+
+# ----------------------------------------------------------------------------------------
+
+mode=""
+
+
+mode () { # Choose between a simple or detailed output
+	query_mode=
+	success='g'
+	echo -e "Simple or Detailed Output?"
+	while [[ $query_mode != "0" ]]; do
+		if [[ $success == "g" ]]; then
+			echo -ne "${Green}(s/d) ❯${clr} "
+		else
+			echo -ne "\e[2A\e[K${IRed}Invalid ❯${clr} "
+		fi
+		read mode
+		echo
+		if [[ $mode != "s" && $mode != "d" ]]; then
+			query_mode="1"
+			success="r"
+		else
+			query_mode="0"
+		fi
+	done
+}
+
+
+random_loading () { # Random loading text
+	loadings=("Going inside a theater to take a look at the billboard 🏃" "Time traveling to the future to find movies 🤖" "Exploring the vast internet archive 📚" "Binge watching every single show in existance 👀" "Subscribing to every streaming service 📺" "Literally making a top grossing film 💸")
+	rand_loadings=${loadings[$((RANDOM % ${#loadings[@]}))]}
+	printf "\n%s%s\n\n" "$rand_loadings" "..."
+	sleep 1.5
+}
+
+
+loading_anim () { # Simple percentage loading animation
+	for i in $(seq 0 100); do
+		printf "\r%-3s%s" "$i" "%"
+		sleep .009
+	done
+	printf "\r\e[5;92m%-3s%s DONE\e[0m" "100" "%"
+}
+
+
+progress_bar () { # Progress bar with variable speed as intake argument
+	total=$1
+	echo
+	for (( i = 1; i <= $total; i++ )); do
+		pc1=$(((($i)*100)))
+		pc2=$(($total))
+		pc3=$(($pc1/$pc2))
+		pc=$(bc <<< 'scale=2; '"$pc1"'/'"$pc2"'')
+		BARLEN=$(($pc3 / 5))
+		printf "\r%s" " "
+		for j in {1..20}; do
+  	  		if [ "$j" -gt "$BARLEN" ]; then
+  	    		printf "\e[8m%s\e[m" "―"
+  	  		else 
+  	    		printf "\e[0;92m%s\e[m" "―"
+  	  		fi
+  		done
+		sleep .013
+		printf " %d%%" "$pc3"
+	done
+	printf "\r%s" " "
+	echo -e "${BGreen}――――――――――――――――――――${clr} ${BGreen}100%${clr}"
+}
+
+
+random_fact () { # Get a random fact to display in the main menu
+	while read -r line
+	do
+  	array_quote+=("$line")
+	done < <(curl -s --header "X-Api-Key: sDJ8jYfMAofemh0gsYM3ZA==WsLJTeIpa21aiMoa" 'https://api.api-ninjas.com/v1/quotes?category=movies' | jq -rc '.[] | .quote, .author')
+	printf "%s\n \e[3;37m%20s\e[0m\n" "${array_quote[0]}" "-${array_quote[1]}"
+}
+
+# ----------------------------------------------------------------------------------------
+
+box_office () { # Get current box office
+	output=$(curl -s 'https://imdb-api.com/en/API/BoxOffice/'"$API_KEY2"'' | jq -r)
+	err=$(echo $output | jq -r '.errorMessage')
+	length=$(echo $output | jq -r '.items | length')
+
+	if [[ $err != "" ]]; then
+		echo -e "\n${IRed}ERROR${clr} - $err :(\n"
+		exit
+	fi
+
+	progress_bar 30
+	echo
+
+	for (( i = 0; i < $length; i++ )); do
+		rank=$(echo $output | jq -r '.items['"$i"'].rank')
+		title=$(echo $output | jq -r '.items['"$i"'].title')
+		weekend=$(echo $output | jq -r '.items['"$i"'].weekend')
+		gross=$(echo $output | jq -r '.items['"$i"'].gross')
+		weeks=$(echo $output | jq -r '.items['"$i"'].weeks')
+
+		info0="Rank"
+		info1="Title"
+		info2="Weekend"
+		info3="Gross"
+		info4="Weeks"
+
+		table_content+="${BYellow}$info0${clr},${BWhite}$rank${clr}\n${BWhite}$info1${clr},${ITWhite}$title${clr}\n${BWhite}$info2${clr},$weekend\n${BWhite}$info3${clr},$gross\n${BWhite}$info4${clr},$weeks\n"
+		
+		echo -e "$table_content" | column -t -s ','
+		echo
+		table_content=
+	done
+}
+
+# ----------------------------------------------------------------------------------------
+
+highest_grossing_films () { # Get highest grossing films of all time
+	output=$(curl -s 'https://imdb-api.com/en/API/BoxOfficeAllTime/'"$API_KEY2"'' | jq -r)
+	err=$(echo $output | jq -r '.errorMessage')
+
+	if [[ $err != "" ]]; then
+		echo -e "\n${IRed}ERROR${clr} - $err :(\n"
+		exit
+	fi
+
+	progress_bar 30
+	rank_limit=10
+
+	for (( i = 0; i < $rank_limit; i++ )); do
+		rank=$(echo $output | jq -r '.items['"$i"'].rank')
+		title=$(echo $output | jq -r '.items['"$i"'].title')
+		year=$(echo $output | jq -r '.items['"$i"'].year')
+		domesticLifetimeGross=$(echo $output | jq -r '.items['"$i"'].domesticLifetimeGross')
+		domestic=$(echo $output | jq -r '.items['"$i"'].domestic')
+		foreignLifetimeGross=$(echo $output | jq -r '.items['"$i"'].foreignLifetimeGross')
+		foreign=$(echo $output | jq -r '.items['"$i"'].foreign')
+		worldwideLifetimeGross=$(echo $output | jq -r '.items['"$i"'].worldwideLifetimeGross')
+
+		printf "\e[1;34m%-3s\e[0m \e[3;37m%s\e[0m \e[3;37m%s\e[0m\n" "$rank)" "$title" "$year"
+		printf "\e[1;37m%3s\e[0m\n" "Lifetime Gross"
+		printf "\e[0;34m%-3s\e[0m\e[1;37m%-10s\e[0m %s\n" "ᐅ " "World" "$worldwideLifetimeGross"
+		printf "\e[0;34m%-3s\e[0m\e[1;37m%-10s\e[0m %-15s \e[0;90m%s\e[0m\n" "ᐅ " "Domestic" "$domesticLifetimeGross" "($domestic)"
+		printf "\e[0;34m%-3s\e[0m\e[1;37m%-10s\e[0m %-15s \e[0;90m%s\e[0m\n" "ᐅ " "Foreign" "$foreignLifetimeGross" "($foreign)"
+		echo
+	done
+}
+
+# ----------------------------------------------------------------------------------------
+
+box_office_all () { # Choose between recent box office of highest grossing films ever
+	query_while=
+	success='g'
+	echo -e "${BWhite}Box Office${clr}\nView Recent or All Time? \n${IBlack}press q to exit${clr}"
+	
+	while [[ $query_while != "0" ]]; do
+		if [[ $success == "g" ]]; then
+			echo -ne "${Green}(r/a) ❯${clr} "
+		else
+			echo -ne "\e[1A\e[K${IRed}Invalid Option ❯${clr} "
+		fi
+		read boxo
+		if [[ $boxo == "q" ]]; then
+			exit
+		elif [[ $boxo == "r" ]]; then
+			box_office
+			exit
+		elif [[ $boxo == "a" ]]; then
+			highest_grossing_films
+			exit
+		elif [[ $boxo != "q" || $boxo != "r" || $boxo != "a" ]]; then
+			query_while="1"
+			success="r"
+		else
+			query_while="0"
+		fi
+	done
+}
+
+# ----------------------------------------------------------------------------------------
+
+download_movie () { # Download movies
+	query_while=
+	success='g'
+	
+	# If no flags passed, keep the user in prompt until movie is found
+	if [ $# -eq 0 ]; then
+
+		# User instructions / prompt
+		printf "${BWhite}%s${clr}\n" "Search Movie"
+		printf "%-44s${IBlack}%s${clr}\n" " - It's case insensitive and can use spaces" "(ex. avengers endgame)"
+		printf "%-44s${IBlack}%s${clr}\n" " - Can select multiple items with tab" "(ex. every avengers movie)"
+		printf "${IBlack}%s${clr}\n" "press q to exit"
+	
+		while [[ $query_while != "0" ]]; do
+			if [[ $success == "g" ]]; then
+				echo -ne "${Green}Input ❯${clr} "
+			else
+				echo -ne "\e[1A\e[K${IRed}Movie not found ❯${clr} "
+			fi
+		
+			read query
+
+			if [[ $query == "q" ]]; then
+				exit
+			fi
+
+			query="${query// /%20}"
+			output=$(curl -s 'https://yts.mx/api/v2/list_movies.json?sort_by=year&limit=50&page=1&query_term='"$query"'' | jq -r)
+			movie_count=$(echo $output | jq -r '.data.movie_count')
+
+			if [[ $movie_count == 0 ]]; then
+				query_while="1"
+				success="r"
+			else
+				query_while="0"
+			fi
+		done
+	# If flags passed and if no movie found, prompt the user until movie is found
+	else
+		while [[ $query_while != "0" ]]; do
+			if [[ $success == "g" ]]; then
+				echo -ne "${BWhite}Searching for${clr} ${ITWhite}"$1"${clr}...\n"
+				sleep .7
+				query="$1"
+			else
+				echo -ne "\e[1A\e[K${IRed}"$1" not found${clr}\n\n"
+				printf "${BWhite}%s${clr}\n" "Search Movie"
+				printf "%-44s${IBlack}%s${clr}\n" " - It's case insensitive and can use spaces" "(ex. avengers endgame)"
+				printf "%-44s${IBlack}%s${clr}\n" " - Can select multiple items with tab" "(ex. every avengers movie)"
+				printf "${IBlack}%s${clr}\n" "press q to exit"
+				
+				success='g'
+				while [[ $query_while != "0" ]]; do
+					if [[ $success == "g" ]]; then
+						echo -ne "${Green}Input ❯${clr} "
+					else
+						echo -ne "\e[1A\e[K${IRed}Movie not found ❯${clr} "
+					fi
+
+					read query
+
+					if [[ $query == "q" ]]; then
+						exit
+					fi
+					
+					query="${query// /%20}"
+					output=$(curl -s 'https://yts.mx/api/v2/list_movies.json?sort_by=year&limit=50&page=1&query_term='"$query"'' | jq -r)
+					movie_count=$(echo $output | jq -r '.data.movie_count')
+
+					if [[ $movie_count == 0 ]]; then
+						query_while="1"
+						success="r"
+					else
+						query_while="0"
+					fi
+				done
+
+				if [[ $query == "q" ]]; then
+					exit
+				fi
+			fi
+
+			query="${query// /%20}"
+			output=$(curl -s 'https://yts.mx/api/v2/list_movies.json?sort_by=year&limit=50&page=1&query_term='"$query"'' | jq -r)
+			movie_count=$(echo $output | jq -r '.data.movie_count')
+
+			if [[ $movie_count == 0 ]]; then
+				query_while="1"
+				success="r"
+			else
+				query_while="0"
+			fi
+		done
+	fi
+
+	# After successful movie search, make user choose one or more movies
+	progress_bar 80
+	echo
+
+	choice=$(echo $output | jq -r '.data.movies[] | {title_long, id} | join(" #")' | fzf --cycle --height=12 -m --layout=reverse --prompt=filter: --header='Choose an option | press esc to quit' | cut -d'#' -f2) 
+
+	if [[ $choice == "" ]]; then
+		echo -e "No movie selected"
+		exit
+	fi
+
+	movie_id_array=($(echo $choice | tr " " "\n"))
+
+	id_length=${#movie_id_array[@]}
+
+	for (( i=0; i<$id_length; i++ ));do 
+		query_id=${movie_id_array[$i]}
+		output_sel=$(curl -s 'https://yts.mx/api/v2/movie_details.json?movie_id='"$query_id"'' | jq -r)
+
+		title=$(echo $output_sel | jq -r '.data.movie.title')
+		year=$(echo $output_sel | jq -r '.data.movie.year')
+		rating=$(echo $output_sel | jq -r '.data.movie.rating')
+		mpa_rating=$(echo $output_sel | jq -r '.data.movie.mpa_rating')
+		runtime=$(echo $output_sel | jq -r '.data.movie.runtime')
+		genres=$(echo $output_sel | jq -rc '.data.movie.genres')
+		large_cover_image=$(echo $output_sel | jq -r '.data.movie.large_cover_image')
+		description_intro=$(echo $output_sel | jq -r '.data.movie.description_intro')
+		date_uploaded_unix=$(echo $output_sel | jq -r '.data.movie.date_uploaded_unix')
+		yt_trailer_code=$(echo $output_sel | jq -r '.data.movie.yt_trailer_code')
+		id=$(echo $output_sel | jq -r '.data.movie.id')
+
+		genres=$(echo "$genres" | sed 's/[^0-9A-Za-z]*//g' | sed 's/\([^[:blank:]]\)\([[:upper:]]\)/\1 \2/g')
+
+		base_yt_url="https://www.youtube.com/watch?v="
+
+		if [[ $yt_trailer_code != "" ]]; then
+			yt_trailer=$base_yt_url$yt_trailer_code
+		else
+			yt_trailer=""
+		fi
+
+		# Choose between differnet movie resolutions
+		choice_dld=$(echo $output_sel | jq -rc '.data.movie.torrents[] | {quality, size, hash} | join(" ")' | fzf --cycle --height=12 --layout=reverse --prompt=filter: --header='Choose an option | press esc to quit' | cut -d' ' -f4)
+
+		if [[ $choice_dld == "" ]]; then
+			echo -e "No download selected"
+			exit
+		fi
+
+		hash=$choice_dld
+
+		url=$(echo $output_sel | jq -r '.data.movie.torrents[] | select(.hash=="'"$hash"'") | .url')
+		quality=$(echo $output_sel | jq -r '.data.movie.torrents[] | select(.hash=="'"$hash"'") | .quality')
+		size=$(echo $output_sel | jq -r '.data.movie.torrents[] | select(.hash=="'"$hash"'") | .size')
+
+		printf "\e[1;32m%-10s\e[0m \e[3;37m%s\e[0m\n" "Title" "$title"
+		printf "\e[1;37m%-10s\e[0m %s\n" "Year" "$year"
+		printf "\e[1;37m%-10s\e[0m %s/10\n" "Rating" "$rating"
+		printf "\e[1;37m%-10s\e[0m %s\n" "Audience" "$mpa_rating"
+		printf "\e[1;37m%-10s\e[0m %s min\n" "Runtime" "$runtime"
+		printf "\e[1;37m%-10s\e[0m %s\n" "Genres" "$genres"
+		printf "\e[1;37m%-10s\e[0m \e]8;;%s\a\e[4;34mPoster\e[0m\e]8;;\a\n" "Poster" "$large_cover_image"
+		echo 
+
+		printf "%4s\e[1;37m%-8s\e[0m \e]8;;%s\a\e[4;34mDOWNLOAD\e[0m\e]8;;\a\n" " " "URL" "$url"
+		printf "%4s\e[1;37m%-8s\e[0m %s\n" " " "Quality" "$quality"
+		printf "%4s\e[1;37m%-8s\e[0m %s\n" " " "Size" "$size"
+		echo
+	done
+
+	# Ask user if they want to download the torrent file
+	query_while1=
+	success1='g'
+
+	echo -e "Do you want to download file?"
+
+	while [[ $query_while1 != "0" ]]; do
+		if [[ $success1 == "g" ]]; then
+			echo -ne "${Green}(y/n) ❯${clr} "
+		else
+			echo -ne "\e[1A\e[K${IRed}(y/n)! ❯${clr} "
+		fi
+		
+		read dnld
+
+		if [[ $dnld == "n" ]]; then
+			echo -e "File not downloaded"
+			exit
+		elif [[ $dnld == "y" ]]; then
+			query_while1="0"
+		else
+			query_while1="1"
+			success1="r"
+		fi
+	done
+
+	filename="$title ($year) [$quality]"
+	filename=${filename// /_}
+
+	echo -e "\nDownloading ${ITWhite}'$filename'${clr} ..."
+
+	progress_bar 60 & bar=$!
+	curl -s -o ''"$filename"'.torrent' ''"$url"'' & file=$!
+	wait $bar
+	wait $file
+
+	echo -e "\n${IGreen}File downloaded successfully${clr}\n"
+	exit
+}
+
+# ----------------------------------------------------------------------------------------
+
+in_theaters () { # Get data about movie in theaters
+	output=$(curl -s 'https://imdb-api.com/en/API/InTheaters/'"$API_KEY"'' | jq -r)
+	err=$(echo $output | jq -r '.errorMessage')
+	item_num=$(echo $output | jq -r '.items')
+	length=$(echo $output | jq -r '.items | length')
+
+	# Error handling
+	if [[ $err != "" ]]; then
+		echo -e "\n${IRed}ERROR${clr} - Not found or temporarily unavailable :(\n"
+		exit
+	elif [[ $item_num == "[]" ]]; then
+		echo -e "\n${IRed}ERROR${clr} - Not found or temporarily unavailable :(\n"
+		exit
+	fi
+
+	progress_bar 30
+	echo
+	
+	# Simple mode for quick info lookup
+	if [[ $mode == "s" ]]; then
+		for (( i = 0; i < $length; i++ )); do
+			fullTitle=$(echo $output | jq -r '.items['"$i"'].fullTitle')
+			releaseState=$(echo $output | jq -r '.items['"$i"'].releaseState')
+			stars=$(echo $output | jq -r '.items['"$i"'].stars')
+
+			printf "\e[1;36m%-11s\e[0m\e[3;37m%s\e[0m\n" "Title" "$fullTitle"
+			printf "\e[1;37m%-11s\e[0m%s\n" "Release" "$releaseState"
+			printf "\e[1;37m%-11s\e[0m%s\n" "Actors" "$stars"
+			echo
+		done
+
+	# Detailed view with more information
+	elif [[ $mode == "d" ]]; then
+		for (( i = 0; i < $length; i++ )); do
+			fullTitle=$(echo $output | jq -r '.items['"$i"'].fullTitle')
+			releaseState=$(echo $output | jq -r '.items['"$i"'].releaseState')
+			runtimeStr=$(echo $output | jq -r '.items['"$i"'].runtimeStr')
+			plot=$(echo $output | jq -r '.items['"$i"'].plot')
+			contentRating=$(echo $output | jq -r '.items['"$i"'].contentRating')
+			genres=$(echo $output | jq -r '.items['"$i"'].genres')
+			directors=$(echo $output | jq -r '.items['"$i"'].directors')
+			stars=$(echo $output | jq -r '.items['"$i"'].stars')
+
+			printf "\e[1;36m%-11s\e[0m\e[3;37m%s\e[0m\n" "Title" "$fullTitle"
+			printf "\e[1;37m%-11s\e[0m%s\n" "Release" "$releaseState"
+			printf "\e[1;37m%-11s\e[0m%s\n" "Runtime" "$runtimeStr"
+			printf "\e[1;37m%-11s\e[0m%s\n" "Rating" "$contentRating"
+			printf "\e[1;37m%-11s\e[0m%s\n" "Genres" "$genres"
+			printf "\e[1;37m%-11s\e[0m%s\n" "Directors" "$directors"
+			printf "\e[1;37m%-11s\e[0m%s\n" "Stars" "$stars"
+			printf "\e[1;37m%-11s\e[0m%s\n" "Plot" "$plot"
+			echo
+		done
+	else
+		echo -e "\n${IRed}ERROR${clr} - Invalid Input :(\n"
+		exit
+	fi
+}
+
+# ----------------------------------------------------------------------------------------
+
+coming_soon () { # Get data about movies coming soon
+	output=$(curl -s 'https://imdb-api.com/en/API/ComingSoon/'"$API_KEY"'' | jq -r)
+	err=$(echo $output | jq -r '.errorMessage')
+	item_num=$(echo $output | jq -r '.items')
+	length=$(echo $output | jq -r '.items | length')
+
+	# Error handling
+	if [[ $err != "" ]]; then
+		echo -e "\n${IRed}ERROR${clr} - Not found or temporarily unavailable :(\n"
+		exit
+	elif [[ $item_num == "[]" ]]; then
+		echo -e "\n${IRed}ERROR${clr} - Not found or temporarily unavailable :(\n"
+		exit
+	fi
+	
+	progress_bar 30
+	echo
+
+	# Simple mode for quick info lookup
+	if [[ $mode == "s" ]]; then
+		for (( i = 0; i < $length; i++ )); do
+			fullTitle=$(echo $output | jq -r '.items['"$i"'].fullTitle')
+			releaseState=$(echo $output | jq -r '.items['"$i"'].releaseState')
+			stars=$(echo $output | jq -r '.items['"$i"'].stars')
+
+			printf "\e[1;36m%-11s\e[0m\e[3;37m%s\e[0m\n" "Title" "$fullTitle"
+			printf "\e[1;37m%-11s\e[0m%s\n" "Release" "$releaseState"
+			printf "\e[1;37m%-11s\e[0m%s\n" "Actors" "$stars"
+			echo
+		done
+
+	# Detailed view with more information
+	elif [[ $mode == "d" ]]; then
+		for (( i = 0; i < $length; i++ )); do
+			fullTitle=$(echo $output | jq -r '.items['"$i"'].fullTitle')
+			releaseState=$(echo $output | jq -r '.items['"$i"'].releaseState')
+			runtimeStr=$(echo $output | jq -r '.items['"$i"'].runtimeStr')
+			plot=$(echo $output | jq -r '.items['"$i"'].plot')
+			contentRating=$(echo $output | jq -r '.items['"$i"'].contentRating')
+			genres=$(echo $output | jq -r '.items['"$i"'].genres')
+			directors=$(echo $output | jq -r '.items['"$i"'].directors')
+			stars=$(echo $output | jq -r '.items['"$i"'].stars')
+
+			printf "\e[1;36m%-11s\e[0m\e[3;37m%s\e[0m\n" "Title" "$fullTitle"
+			printf "\e[1;37m%-11s\e[0m%s\n" "Release" "$releaseState"
+			printf "\e[1;37m%-11s\e[0m%s\n" "Runtime" "$runtimeStr"
+			printf "\e[1;37m%-11s\e[0m%s\n" "Rating" "$contentRating"
+			printf "\e[1;37m%-11s\e[0m%s\n" "Genres" "$genres"
+			printf "\e[1;37m%-11s\e[0m%s\n" "Directors" "$directors"
+			printf "\e[1;37m%-11s\e[0m%s\n" "Stars" "$stars"
+			printf "\e[1;37m%-11s\e[0m%s\n" "Plot" "$plot"
+			echo
+		done
+	else
+		echo -e "\n${IRed}ERROR${clr} - Invalid Input :(\n"
+		exit
+	fi
+}
+
+# ----------------------------------------------------------------------------------------
+
+search_show () { # Search tv show to view seasons and episodes
+	query_while=
+	success='g'
+	err=
+	
+	# If no flags passed, keep the user in prompt until tv show is found
+	if [ $# -eq 0 ]; then
+
+		# User instructions / prompt
+		printf "${BWhite}%s${clr}\n" "Search TV Show"
+		printf "%-44s${IBlack}%s${clr}\n" " - You can specify season and episode" "(ex. mandalorian 1 7)"
+		printf "%-44s${IBlack}%s${clr}\n" " - Type episode 0 (zero) to show last one" "(ex. mandalorian 2 0)"
+		printf "${IBlack}%s${clr}\n" "press q to exit"
+
+		while [[ $query_while != "0" ]]; do
+
+			if [[ $success == "g" ]]; then
+				echo -ne "${IGreen}Input ❯${clr} "
+			else
+				echo -ne "\e[1A\e[K${IRed}$err ❯${clr} "
+			fi
+
+			read query_raw season episode
+
+			if [[ $query_raw == "q" ]]; then
+				exit
+			elif [[ $query_raw == "" ]]; then
+				query_while="1"
+				success="r"
+				err="No query"
+			else
+				query_while="0"
+			fi
+
+			output=$(curl -s 'https://epguides.frecar.no/show/'"$query_raw"'/' | jq -r)
+			verify_show=$(echo $output | jq -r '.error')
+	
+			if [[ $verify_show != "null" ]]; then 
+					query_while="1"
+					success="r"
+					err="Show not found"
+			fi
+
+			if [[ ${#season} != "0" && ${#episode} != "0" ]]; then
+				verify_episode=$(echo $output | jq -r '."'"$season"'"['"$(($episode-1))"'].show.title')
+
+				if [[ $verify_episode == "null" ]]; then 
+					query_while="1"
+					success="r"
+					err="Episode not found"
+				fi
+
+				verify_season=$(echo $output | jq -r '."'"$season"'"')
+
+				if [[ $verify_season == "null" ]]; then 
+					query_while="1"
+					success="r"
+					err="Season not found"
+				fi
+
+			elif [[ ${#season} != "0" && ${#episode} == "0" ]]; then
+				verify_season=$(echo $output | jq -r '."'"$season"'"')
+
+				if [[ $verify_season == "null" ]]; then 
+					query_while="1"
+					success="r"
+					err="Season not found"
+				fi
+			fi
+		done
+	# If flags passed and if no tv show found, prompt the user until tv show is found
+	else
+		while [[ $query_while != "0" ]]; do
+			if [[ $success == "g" ]]; then
+				if [ $# -eq "1" ]; then
+					echo -ne "${BWhite}Searching for${clr} ${ITWhite}"\'${1^}\'"${clr}...\n"
+				elif [ $# -eq "2" ]; then	
+					echo -ne "${BWhite}Searching for${clr} ${ITWhite}"\'${1^} Season $2\'"${clr}...\n"
+				else
+					echo -ne "${BWhite}Searching for${clr} ${ITWhite}"\'${1^} Season $2 Episode $3\'"${clr}...\n"
+				fi
+				sleep .85
+				query_raw="$1"
+				season="$2"
+				episode="$3"
+				
+			else
+				# User instructions / prompt
+				echo -ne "\e[1A\e[K${IRed}"\'${1^}\' $err"${clr}\n\n"
+				printf "${BWhite}%s${clr}\n" "Search TV Show"
+				printf "%-44s${IBlack}%s${clr}\n" " - You can specify season and episode" "(ex. mandalorian 1 7)"
+				printf "%-44s${IBlack}%s${clr}\n" " - Type episode 0 (zero) to show last one" "(ex. mandalorian 2 0)"
+				printf "${IBlack}%s${clr}\n" "press q to exit"
+				
+				# While tv show, season or episode not found
+				success='g'
+				while [[ $query_while != "0" ]]; do
+					if [[ $success == "g" ]]; then
+						echo -ne "${Green}Input ❯${clr} "
+					else
+						echo -ne "\e[1A\e[K${IRed}$err ❯${clr} "
+					fi
+
+					read query_raw season episode
+
+					if [[ $query_raw == "q" ]]; then
+						exit
+					elif [[ $query_raw == "" ]]; then
+						query_while="1"
+						success="r"
+						err="No query provided"
+					else
+						query_while="0"
+					fi
+
+					output=$(curl -s 'https://epguides.frecar.no/show/'"$query_raw"'/' | jq -r)
+					verify_show=$(echo $output | jq -r '.error')
+	
+					if [[ $verify_show != "null" ]]; then 
+						query_while="1"
+						success="r"
+						err="'$query_raw' not found"
+					fi
+
+					if [[ ${#season} != "0" && ${#episode} != "0" ]]; then
+						verify_season=$(echo $output | jq -r '."'"$season"'"')
+
+						if [[ $verify_season == "null" ]]; then 
+							query_while="1"
+							success="r"
+							if [ ${#2} -eq "0" ]; then
+								err="Season $season not found"
+							else
+								err="Season $2 not found"
+							fi
+						fi
+
+						verify_episode=$(echo $output | jq -r '."'"$season"'"['"$(($episode-1))"'].show.title')
+
+						if [[ $verify_episode == "null" ]]; then 
+							query_while="1"
+							success="r"
+
+							if [ ${#3} -eq "0" ]; then
+								err="Season $season Episode $episode not found"
+							else
+								err="Season $2 Episode $3 not found"
+							fi
+						fi
+
+					elif [[ ${#season} != "0" && ${#episode} == "0" ]]; then
+						verify_season=$(echo $output | jq -r '."'"$season"'"')
+
+						if [[ $verify_season == "null" ]]; then 
+							query_while="1"
+							success="r"
+							if [ ${#2} -eq "0" ]; then
+								err="Season $season not found"
+							else
+								err="Season $2 not found"
+							fi
+						fi
+					fi
+				done
+			fi
+
+			# Checking user input
+			output=$(curl -s 'https://epguides.frecar.no/show/'"$query_raw"'/' | jq -r)
+			verify_show=$(echo $output | jq -r '.error')
+
+			if [[ $verify_show != "null" ]]; then 
+				query_while="1"
+				success="r"
+				err="Show not found"
+			else
+				query_while="0"
+			fi
+
+			if [[ ${#season} != "0" && ${#episode} != "0" ]]; then
+				verify_season=$(echo $output | jq -r '."'"$season"'"')
+
+				if [[ $verify_season == "null" ]]; then 
+					query_while="1"
+					success="r"
+					if [ $2 -eq "0" ]; then
+						err="Season $season not found"
+					else
+						err="Season $2 not found"
+					fi
+				else
+					query_while="0"
+				fi
+
+				verify_episode=$(echo $output | jq -r '."'"$season"'"['"$(($episode-1))"'].show.title')
+
+				if [[ $verify_episode == "null" ]]; then 
+					query_while="1"
+					success="r"
+
+					if [ $3 -eq "0" ]; then
+						err="Season $season Episode $episode not found"
+					else
+						err="Season $2 Episode $3 not found"
+					fi
+				else
+					query_while="0"
+				fi
+
+			elif [[ ${#season} != "0" && ${#episode} == "0" ]]; then
+				verify_season=$(echo $output | jq -r '."'"$season"'"')
+
+				if [[ $verify_season == "null" ]]; then 
+					query_while="1"
+					success="r"
+					if [ $2 -eq "0" ]; then
+						err="Season $season not found"
+					else
+						err="Season $2 not found"
+					fi
+				else
+					query_while="0"
+				fi
+			fi
+		done
+	fi
+
+	# After successful tv show search, make user view show information
+	progress_bar 40
+	echo
+
+	# If season and episode specified
+	if [[ ${#season} != "0" ]] && [[ ${#episode} != "0" ]]; then
+		episode_index=$(($episode-1))
+		episode_count=$(echo $output | jq -r '."'"$season"'" | length')
+
+		column0="Ep"
+		column1="Title"
+		column2="Release"
+
+		column_titles="${BWhite}$column0${clr},|,${BWhite}$column1${clr},|,${BWhite}$column2${clr}\n"
+
+		show_title=$(echo $output | jq -r '."'"$season"'"['"$episode_index"'].show.title')
+		ep_title=$(echo $output | jq -r '."'"$season"'"['"$episode_index"'].title')
+		ep_release=$(echo $output | jq -r '."'"$season"'"['"$episode_index"'].release_date')
+		
+		printf "\e[3;34m%7s\e[0m %s\n" "Show" "$show_title"
+		printf "\e[0;36m%7s\e[0m %s\n" "Season" "$season"
+		
+		if [[ $episode != "0" ]]; then
+			printf "\e[0;35m%7s\e[0m %s\n" "Episode" "$episode"
+			content="${BYellow}$episode${clr},|,$ep_title,|,$ep_release\n"
+		else
+			printf "\e[0;35m%7s\e[0m %s\n" "Episode" "$episode_count"
+			content="${BYellow}$episode_count${clr},|,$ep_title,|,$ep_release\n"
+		fi
+
+		echo -e "$column_titles$content" | column -t -s ','
+		echo
+	
+	# If season specified but not episode 
+	elif [[ ${#season} != "0" ]] && [[ ${#episode} == "0" ]]; then
+		episode_index=$(($episode-1))
+
+		season_count=$(echo $output | jq -r '. | length')
+		episode_count=$(echo $output | jq -r '."'"$season"'" | length')
+		show_title=$(echo $output | jq -r '."'"$season"'"[0].show.title')
+		table_titles="${BWhite}Ep${clr},|,${BWhite}Title${clr},|,${BWhite}Release${clr}\n"
+		table_content=
+		
+		echo -ne "Select ${BWhite}episode${clr} or view all (1/$episode_count | 'enter' for all): "
+		read select
+		echo
+		echo -e "${Blue}Show:${clr} $show_title"
+		echo -e "${Cyan}Season:${clr} ${BWhite}$season${clr} out of $season_count"
+
+		if [[ $select == "" ]]; then
+			for (( i = 0; i < $episode_count; i++ )); do
+				ii=$(($i+1))
+
+				ep_title=$(echo $output | jq -r '."'"$season"'"['"$i"'].title')
+				ep_release=$(echo $output | jq -r '."'"$season"'"['"$i"'].release_date')
+
+				table_content+="${BYellow}$ii${clr},|,$ep_title,|,$ep_release\n"
+			done
+
+		elif [[ $select -gt "0" ]] && [[ $select -le $episode_count ]]; then
+			sselect=$(($select-1))
+
+			echo -e "${Purple}Episode:${clr} ${BWhite}$select${clr} / $episode_count"
+			
+			ep_title=$(echo $output | jq -r '."'"$season"'"['"$sselect"'].title')
+			ep_release=$(echo $output | jq -r '."'"$season"'"['"$sselect"'].release_date')
+
+			table_content+="${BYellow}$select${clr},|,$ep_title,|,$ep_release\n"
+
+		else
+			echo -e "\n${IRed}ERROR${clr} - Invalid Input :(\n"
+			exit
+		fi
+
+		echo -e "$table_titles$table_content" | column -t -s ','
+		echo
+
+	# If no specification given
+	else
+		show_title=$(echo $output | jq -r '."1"[0].show.title')
+		season_count=$(echo $output | jq -r '. | length')
+
+		echo -ne "Select ${BWhite}season${clr} or view all (1/$season_count | 'enter' for all): "
+		read select
+		echo
+
+		table_titles="${BWhite}Ep${clr},|,${BWhite}Title${clr},|,${BWhite}Release${clr}\n"
+		table_content=
+
+		if [[ $select == "" ]]; then
+			echo -e "${Blue}Show:${clr} $show_title"
+			
+			for (( i = 0; i < $season_count; i++ )); do
+				ii=$(($i+1))
+				episode_count=$(echo $output | jq -r '."'"$ii"'" | length')
+				
+				echo -e "\n${Cyan}Season:${clr} ${BWhite}$ii${clr} out of $season_count"
+			
+				for (( j = 0; j < $episode_count; j++ )); do
+					jj=$(($j+1))
+
+					ep_title=$(echo $output | jq -r '."'"$ii"'"['"$j"'].title')
+					ep_release=$(echo $output | jq -r '."'"$ii"'"['"$j"'].release_date')
+
+					table_content+="${BYellow}$jj${clr},|,$ep_title,|,$ep_release\n"
+				done
+				echo -e "$table_titles$table_content" | column -t -s ','
+				table_content=
+			done
+			echo
+
+		elif [[ $select -gt "0" ]] && [[ $select -le $season_count ]]; then
+			episode_count=$(echo $output | jq -r '."'"$select"'" | length')
+
+			echo -ne "Select ${BWhite}episode${clr} or view all (1/$episode_count | 'enter' for all): "
+			read select1
+			echo
+
+			if [[ $select1 == "" ]]; then
+				echo -e "${Blue}Show:${clr} $show_title"
+				echo -e "${Cyan}Season:${clr} ${BWhite}$select${clr} out of $season_count"
+
+				for (( i = 0; i < $episode_count; i++ )); do
+					ii=$(($i+1))
+			
+					ep_title=$(echo $output | jq -r '."'"$select"'"['"$i"'].title')
+					ep_release=$(echo $output | jq -r '."'"$select"'"['"$i"'].release_date')
+
+					table_content+="${BYellow}$ii${clr},|,$ep_title,|,$ep_release\n"
+				done
+
+			elif [[ $select1 -gt "0" ]] && [[ $select1 -le $episode_count ]]; then
+				echo -e "${Blue}Show:${clr} $show_title"
+				echo -e "${Cyan}Season:${clr} ${BWhite}$select${clr} out of $season_count"
+				echo -e "${Purple}Episode:${clr} ${BWhite}$select1${clr} / $episode_count"
+			
+				sselect1=$(($select1-1))
+
+				ep_title=$(echo $output | jq -r '."'"$select"'"['"$sselect1"'].title')
+				ep_release=$(echo $output | jq -r '."'"$select"'"['"$sselect1"'].release_date')
+
+				table_content+="${BYellow}$select1${clr},|,$ep_title,|,$ep_release\n"
+			else
+				echo -e "\n${IRed}ERROR${clr} - Invalid Input :(\n"
+				exit
+			fi
+			echo -e "$table_titles$table_content" | column -t -s ','
+			echo
+		fi
+	fi
+}
+
+# ----------------------------------------------------------------------------------------
+
+stream_avalbl () { # Check the streaming availability of a movie or tv show
+	query_while=
+	success='g'
+	
+	# If no flags passed, keep the user in prompt until tv show is found 
+	if [ $# -eq 0 ]; then
+
+		# User instructions / prompt
+		printf "${BWhite}%s${clr}\n" "Streaming Availability"
+		printf "%-30s${IBlack}%s${clr}\n" " - Search movie or tv show" "(ex. obiwan kenobi)"
+		printf "${IBlack}%s${clr}\n" "press q to exit"
+	
+		while [[ $query_while != "0" ]]; do
+		
+			if [[ $success == "g" ]]; then
+				echo -ne "${Green}Input ❯${clr} "
+			else
+				echo -ne "\e[1A\e[K${IRed}'$query_av' not found ❯${clr} "
+			fi
+		
+			read query_av
+
+			if [[ $query_av == "q" ]]; then
+				exit
+			fi
+
+			query_av="${query_av// /%20}"
+
+			search=$(curl -s 'https://api.watchmode.com/v1/autocomplete-search/?apiKey='"$API_KEY3"'&search_value='"$query_av"'&search_type=2' | jq -r)
+			verify=$(echo $search | jq -r '.results[] | {name, year, type, id} | join(" -")')
+
+			if [[ $verify == "" ]]; then
+				query_while="1"
+				success="r"
+			else
+				query_while="0"
+			fi
+		done
+	# If flags passed and if no tv show found, prompt the user until tv show is found
+	else
+		while [[ $query_while != "0" ]]; do
+			if [[ $success == "g" ]]; then
+				echo -ne "${BWhite}Searching for${clr} ${ITWhite}"$1"${clr}...\n"
+				sleep .4
+				query_av="$1"
+			else
+				echo -ne "\e[1A\e[K${IRed}'$1' not found${clr}\n\n"
+				printf "${BWhite}%s${clr}\n" "Streaming Availability"
+				printf "%-30s${IBlack}%s${clr}\n" " - Search movie or tv show" "(ex. obiwan kenobi)"
+				printf "${IBlack}%s${clr}\n" "press q to exit"
+
+				success='g'
+				while [[ $query_while != "0" ]]; do
+		
+					if [[ $success == "g" ]]; then
+						echo -ne "${Green}Input ❯${clr} "
+					else
+						echo -ne "\e[1A\e[K${IRed}'$query_av' not found ❯${clr} "
+					fi
+		
+					read query_av
+
+					if [[ $query_av == "q" ]]; then
+						exit
+					fi
+
+					query_av="${query_av// /%20}"
+
+					search=$(curl -s 'https://api.watchmode.com/v1/autocomplete-search/?apiKey='"$API_KEY3"'&search_value='"$query_av"'&search_type=2' | jq -r)
+					verify=$(echo $search | jq -r '.results[] | {name, year, type, id} | join(" -")')
+
+					if [[ $verify == "" ]]; then
+						query_while="1"
+						success="r"
+					else
+						query_while="0"
+					fi
+				done
+				if [[ $query_av == "q" ]]; then
+					exit
+				fi
+			fi
+			query_av="${query_av// /%20}"
+			search=$(curl -s 'https://api.watchmode.com/v1/autocomplete-search/?apiKey='"$API_KEY3"'&search_value='"$query_av"'&search_type=2' | jq -r)
+			verify=$(echo $search | jq -r '.results[] | {name, year, type, id} | join(" -")')
+
+			if [[ $verify == "" ]]; then
+				query_while="1"
+				success="r"
+			else
+				query_while="0"
+			fi
+		done
+	fi
+	
+	# After successful tv show search, make user view show information
+	progress_bar 30
+	echo
+
+	# Select tv show
+	choice=$(echo $search | jq -r '.results[] | {name, year, type, id} | join(" _")' | fzf --cycle --height=12 -m --layout=reverse --prompt=? --header='Choose an option | press esc to quit' | rev | cut -d'_' -f1 | rev)
+
+	if [[ $choice == "" ]]; then
+		echo -e "No series selected"
+		exit
+	fi
+
+	output=$(curl -s 'https://api.watchmode.com/v1/title/'"$choice"'/details/?apiKey='"$API_KEY3"'&append_to_response=sources' | jq -r)
+	service_count=$(echo $output | jq -rc '[.sources[].name] | length')
+
+	if [[ $service_count == "0" ]]; then
+		echo -e "\n${IRed}ERROR${clr} - Not available :(\n"
+		exit
+	fi
+
+	# Choose service
+	service_select=$(echo $output | jq -r '.sources[] | {name, type, price, format} | join("_")' | fzf --cycle --height=12 --layout=reverse --prompt=? --header='Choose an option | press esc to quit')
+
+	service_name=${service_select%%_*}
+	service_type=$(echo $service_select | cut -d'_' -f2)
+	service_price=$(echo $service_select | cut -d'_' -f3)
+	service_format=${service_select##*_}
+
+	title=$(echo $output | jq -rc '.title')
+	name=$(echo $output | jq -rc '.sources[] | select(.name=="'"$service_name"'" and .type=="'"$service_type"'" and .price=='"$service_price"' and .format=="'"$service_format"'") | .name')	
+	type=$(echo $output | jq -rc '.sources[] | select(.name=="'"$service_name"'" and .type=="'"$service_type"'" and .price=='"$service_price"' and .format=="'"$service_format"'") | .type')	
+	format=$(echo $output | jq -rc '.sources[] | select(.name=="'"$service_name"'" and .type=="'"$service_type"'" and .price=='"$service_price"' and .format=="'"$service_format"'") | .format')	
+	price=$(echo $output | jq -rc '.sources[] | select(.name=="'"$service_name"'" and .type=="'"$service_type"'" and .price=='"$service_price"' and .format=="'"$service_format"'") | .price')	
+	seasons=$(echo $output | jq -rc '.sources[] | select(.name=="'"$service_name"'" and .type=="'"$service_type"'" and .price=='"$service_price"' and .format=="'"$service_format"'") | .seasons')	
+	episodes=$(echo $output | jq -rc '.sources[] | select(.name=="'"$service_name"'" and .type=="'"$service_type"'" and .price=='"$service_price"' and .format=="'"$service_format"'") | .episodes')	
+	web_url=$(echo $output | jq -rc '.sources[] | select(.name=="'"$service_name"'" and .type=="'"$service_type"'" and .price=='"$service_price"' and .format=="'"$service_format"'") | .web_url')# 
+	web_url=$(printf "\e]8;;%s\a\e[4;34m"Webpage"\e[0m\e]8;;\a\n" "$web_url")
+
+	info0="Title"
+	info1="Service"
+	info2="Type"
+	info3="Format"
+	info4="Price"
+	info5="Seasons"
+	info6="Episodes"
+	info7="Url"
+
+	table_content+="${BPurple}$info0${clr},${BPurple}➜${clr},${ITWhite}$title${clr}\n"
+	table_content+="${BWhite}$info1${clr},${BPurple}➜${clr},$name\n"
+	table_content+="${BWhite}$info2${clr},${BPurple}➜${clr},$type\n"
+	table_content+="${BWhite}$info3${clr},${BPurple}➜${clr},$format\n"
+	table_content+="${BWhite}$info4${clr},${BPurple}➜${clr},$price\n"
+	table_content+="${BWhite}$info5${clr},${BPurple}➜${clr},$seasons\n"
+	table_content+="${BWhite}$info6${clr},${BPurple}➜${clr},$episodes\n"
+	table_content+="${BWhite}$info7${clr},${BPurple}➜${clr},$web_url"
+		
+	echo -e "$table_content" | column -t -s ','
+	echo
+}
+
+# ----------------------------------------------------------------------------------------
+
+menu () { # Display options in table
+	pad="                  "
+	lenmenu1=$((${#pad}+2))
+	echo
+  	echo -ne "┌"
+	lines=$(printf "%$(echo $lenmenu1)s"); echo -en ${lines// /─} 
+	echo -ne "┐"
+	
+	printf "\n│ %s │\n" "1 ⚊ Download      "
+	echo -ne "├"
+	
+	lines=$(printf "%$(echo $lenmenu1)s"); echo -en ${lines// /─}
+	
+	echo -ne "┤"
+	printf "\n│ %s │\n" "2 ⚊ In Theaters   "
+	echo -ne "├"
+
+	lines=$(printf "%$(echo $lenmenu1)s"); echo -en ${lines// /─}
+	
+	echo -ne "┤"
+	printf "\n│ %s │\n" "3 ⚊ Coming Soon   "
+	echo -ne "├"
+
+	lines=$(printf "%$(echo $lenmenu1)s"); echo -en ${lines// /─}
+	
+	echo -ne "┤"
+	printf "\n│ %s │\n" "4 ⚊ Search TV Show"
+	echo -ne "├"
+
+	lines=$(printf "%$(echo $lenmenu1)s"); echo -en ${lines// /─}
+
+	echo -ne "┤"
+	printf "\n│ %s │\n" "5 ⚊ Streaming     "
+	echo -ne "├"
+
+	lines=$(printf "%$(echo $lenmenu1)s"); echo -en ${lines// /─}
+
+	echo -ne "┤"
+	printf "\n│ %s │\n" "6 ⚊ Box Office    "
+	echo -ne "├"
+
+	lines=$(printf "%$(echo $lenmenu1)s"); echo -en ${lines// /─}
+	
+	echo -ne "┤"
+	printf "\n│ %s │\n" "h ⚊ Show Help     "
+	echo -ne "├"
+
+	lines=$(printf "%$(echo $lenmenu1)s"); echo -en ${lines// /─}
+	
+	echo -ne "┤"
+	printf "\n│ %s │\n" "q ⚊ Quit          "
+	
+	echo -ne "└"
+	lines2=$(printf "%$(echo $lenmenu1)s"); echo -en ${lines2// /─}
+	echo -ne "┘\n"
+}
+
+# ----------------------------------------------------------------------------------------
+
+main_menu () { # Main menu
+	banner
+	random_fact
+	menu
+
+	input="${IGreen}Input ❯${clr} "
+	opc=
+
+	until [ "$opc" == 0 ]; do  	
+  		echo -ne "$input"
+  		read opc
+		case $opc in
+			1 ) clear ; random_loading ; download_movie ; _done ; exit ;;
+			2 ) clear ; random_loading ; mode ; in_theaters ; _done ; exit ;;
+			3 ) clear ; random_loading ; mode ; coming_soon ; _done ; exit ;;
+			4 ) clear ; random_loading ; search_show ; _done ; exit ;;
+			5 ) clear ; random_loading ; stream_avalbl ; _done ; exit ;;
+			6 ) clear ; random_loading ; box_office_all ; _done ; exit ;;
+			h ) help_text ;;
+			q ) clear ; exit ;;
+			* ) input="\e[1A\e[K${IRed}Invalid ❯${clr} " ;;
+		esac
+	done
+}
+
+# ----------------------------------------------------------------------------------------
+
+quick_menu () {
+	table_titles="${BWhite}Cmd${clr}, ,${BWhite}Name${clr}, ,${BWhite}Description${clr}\n"
+	table_content+="${BWhite}1${clr},⚊,Download,→,Download movies\n"
+	table_content+="${BWhite}2${clr},⚊,Theater,→,See this week's releases\n"
+	table_content+="${BWhite}3${clr},⚊,Coming Soon,→,Movies releasing in the near future\n"
+	table_content+="${BWhite}4${clr},⚊,TV Show,→,Search for a tv show\n"
+	table_content+="${BWhite}5${clr},⚊,Streaming,→,See streaming availability\n"
+	table_content+="${BWhite}6${clr},⚊,Box Office,→,See the box office\n"
+	echo -e "$table_titles$table_content" | column -t -s ','
+	echo
+	echo -e "${IBlack}press ('q' to quit | 'h' for help | 'c' to clear)${clr}"
+
+	input="${IGreen}Input ❯${clr} "
+	opc=
+
+	until [ "$opc" == 0 ]; do  	
+  		echo -ne "$input"
+  		read -r -sn1 key
+		case $key in
+			1 ) clear ; random_loading ; download_movie ; _done ; exit ;;
+			2 ) clear ; random_loading ; mode ; in_theaters ; _done ; exit ;;
+			3 ) clear ; random_loading ; mode ; coming_soon ; _done ; exit ;;
+			4 ) clear ; random_loading ; search_show ; _done ; exit ;;
+			5 ) clear ; random_loading ; stream_avalbl ; _done ; exit ;;
+			6 ) clear ; random_loading ; box_office_all ; _done ; exit ;;
+			h ) echo ; help_text ;;
+			q ) clear ; exit ;;
+			c ) clear ;
+				echo -e "$table_titles$table_content" | column -t -s ',' ;
+				echo ;
+				echo -e "${IBlack}press ('q' to quit | 'h' for help | 'c' to clear)${clr}" ;;
+			* ) input="\e[1A\e[K${IRed}Invalid ❯${clr} " ;;
+		esac
+	done
+}
+
+# ----------------------------------------------------------------------------------------
+
+if [ $# -eq 0 ]; then # If no options are provided go straight to main menu
+  quick_menu
+fi
+
+# Processing options to call functions
+POSITIONAL_ARGS=()
+
+while [[ $# -gt 0 ]]; do 
+  case $1 in
+    -m|--menu)
+      flag="$2"
+      shift
+      if [[ $flag == "" ]]; then
+      	clear
+      	main_menu
+      elif [[ $flag == "c" ]]; then
+      	clear
+      	quick_menu
+      else
+      	echo "Invalid argument '$flag'"
+      	echo "For more information try '-h, --help'"
+      	exit
+      fi
+      ;;
+    -d|--dnld)
+      flag="$2"
+      if [[ $flag == '' ]]; then
+      	clear
+      	random_loading
+      	download_movie
+      	shift
+      else
+      	clear
+      	random_loading
+      	download_movie "$flag"
+      	shift
+      fi
+      ;;
+    -t|--theater)
+      flag="$2"
+      if [[ $flag == "" ]]; then
+      	clear
+      	random_loading
+      	mode
+      	in_theaters
+      	shift
+      elif [[ $flag == "s" ]]; then
+      	clear
+      	random_loading
+      	mode="s"
+      	in_theaters
+      	shift
+      elif [[ $flag == "d" ]]; then
+      	clear
+      	random_loading
+      	mode="d"
+      	in_theaters
+      	shift
+      else
+      	echo "Invalid argument '$flag'" ; 
+      	echo "For more information try '-h, --help'" ;
+      	shift
+      fi
+      ;;
+    -s|--soon)
+      flag="$2"
+      if [[ $flag == "" ]]; then
+      	clear
+      	random_loading
+      	mode
+      	coming_soon
+      	shift
+      elif [[ $flag == "s" ]]; then
+      	clear
+      	random_loading
+      	mode="s"
+      	coming_soon
+      	shift
+      elif [[ $flag == "d" ]]; then
+      	clear
+      	random_loading
+      	mode="d"
+      	coming_soon
+      	shift
+      else
+      	echo "Invalid argument '$flag'" ;
+      	echo "For more information try '-h, --help'" ;
+      	shift
+      fi
+      ;;
+    -tv|--tvshow)
+	  flag="$2"
+	  flag2="$3"
+	  flag3="$4"
+       if [[ $flag == "" ]]; then
+       	clear
+        random_loading
+        search_show
+        shift
+       elif [ $# -eq 2 ]; then
+      	clear
+        random_loading
+        search_show $flag
+        shift
+       elif [ $# -eq 3 ]; then
+      	clear
+        random_loading
+        search_show $flag $flag2
+        shift
+       elif [ $# -eq 4 ]; then
+      	clear
+        random_loading
+        search_show $flag $flag2 $flag3
+        shift
+       elif [ $# -ge 5 ]; then
+      	echo "Invalid arguments" ;
+      	echo "For more information try '-h, --help'" ;
+      	shift
+      fi
+	  ;;
+	-a|--strm)
+	  flag="$2"
+      if [[ $flag == "" ]]; then
+      	clear
+      	random_loading
+      	stream_avalbl
+      	shift
+      else
+      	clear
+      	random_loading
+      	stream_avalbl "$flag"
+      	shift
+      fi
+	  ;;
+	-b|--boxo)
+      flag="$2"
+      if [[ $flag == '' ]]; then
+      	clear
+      	random_loading
+      	box_office_all
+      	shift
+      elif [[ $flag == 'r' ]]; then
+      	clear
+      	random_loading
+      	box_office
+      	shift
+      elif [[ $flag == 'a' ]]; then
+      	clear
+      	random_loading
+      	highest_grossing_films
+      	shift
+      else
+      	echo "Invalid argument '$flag'"
+      	echo "For more information try '-h, --help'"
+      	exit
+      fi
+      ;;
+    -v|--version)
+      echo -e "$VERSION" ;
+      shift
+      ;;
+    -h|--help)
+      help_text ;
+      shift
+      ;;
+    -*|--*)
+      echo "Unknown option '$1'" ;
+      echo "For more information try '-h, --help'" ;
+      shift
+      ;;
+    *)
+      POSITIONAL_ARGS+=("$1") # save positional arg
+      shift
+      ;;
+  esac
+done
+
+set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
+
+# End of Program -------------------------------------------------------------------------

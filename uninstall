@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+# Uninstall script for mvnt
+
+BASENAME="mvnt"
+
+if ! [ $(id -u) = 0 ]; then
+    echo "The script needs to be run as root ('sudo ./uninstall' for linux)."
+    exit 1
+fi
+
+# Proceed with uninstall based on OS
+case "$OSTYPE" in
+    *"android") # Tested on Termux
+    	DESTDIR="/data/data/com.termux/files/usr/bin"
+    	echo "Uninstalling from $DESTDIR"
+        rm -rf "$DESTDIR/$BASENAME"
+    ;;
+
+    "linux"*) # Tested on Ubuntu WSL2
+    	DESTDIR="/usr/local/bin"
+    	echo "Uninstalling from $DESTDIR"
+    	rm -rf "$DESTDIR/$BASENAME"
+    ;;
+
+    # "cygwin" | "msys" | "win32") # (Not tested) for Git Bash
+    	# echo windows ;
+    	# DESTDIR="$HOME/bin"
+    	# echo $DESTDIR
+    	# rm -rf "$DESTDIR/$BASENAME"
+    # ;;
+esac
