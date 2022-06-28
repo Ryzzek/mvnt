@@ -2,11 +2,11 @@
 Pronounced "Movie Night", `mvnt` is a cli app written in bash that lets you query movie, tv show and box office information and also download movies.
 
 ## Installation
-First clone the repo.
+First clone the repo
 ```
 $ git clone https://github.com/Ryzzek/mvnt
 ```
-Then cd into directory and run the install script provided (may need to run as root).
+Then cd into directory and run the install script provided (may need to run as root)
 ```
 $ cd mvnt
 $ sudo ./install
